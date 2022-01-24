@@ -108,6 +108,33 @@
   margin-left: 0.5rem;
 }
 
+.fundsList {
+  list-style: none;
+  margin: 0;
+  padding: 10px;
+  background-color: #eee;
+}
+.fundsList li {
+  background-color: #f7f7f7;
+  margin: 0 0 5px;
+}
+.fundsList li {
+  border-bottom: 1px solid #ccc;
+  padding: 15px;
+}
+.fundInfo {
+  font-weight: bold;
+}
+.series div {
+  display: flex;
+  padding: 10px 0 0;
+}
+.series div label, .series div input {
+  flex: 1;
+  padding: 2px 5px;
+  line-height: 1;
+}
+
 @media (max-width: 600px) {
   .grid {
     width: 100%;
