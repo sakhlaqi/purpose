@@ -9,3 +9,8 @@ datasource db {
   provider = "sqlite"
   url      = "file:./dev.db"
 }
+
+model Funds {
+  id String @id @default(uuid())
+  details String
+}
