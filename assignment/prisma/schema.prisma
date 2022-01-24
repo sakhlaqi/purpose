@@ -11,6 +11,6 @@ datasource db {
 }
 
 model Funds {
-  id String @id @default(uuid())
-  details String
+  id Int @id @default(autoincrement())
+  data String @default("")
 }

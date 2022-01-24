@@ -113,28 +113,43 @@
   margin: 0;
   padding: 10px;
   background-color: #eee;
+  max-width: 620px;
 }
 .fundsList li {
   background-color: #f7f7f7;
   margin: 0 0 5px;
-}
-.fundsList li {
   border-bottom: 1px solid #ccc;
   padding: 15px;
 }
 .fundInfo {
   font-weight: bold;
 }
-.series div {
+.fundsList .row {
   display: flex;
   padding: 10px 0 0;
 }
-.series div label, .series div input {
+.fundsList .flexItem {
   flex: 1;
+  display: flex;
+}
+.fundsList label, .fundsList input {
   padding: 2px 5px;
   line-height: 1;
 }
-
+.fundsList .series .inputSymbol {
+  line-height: 1;
+  background-color: #eee;
+  color: #444;
+  padding: 5px 10px;
+  font-weight: bold;
+  font-size: small;
+  border: 1px solid rgb(118, 118, 118);
+  border-right: 0;
+}
+.fundsList .warning {
+  background-color: antiquewhite;
+  font-weight: bold;
+}
 @media (max-width: 600px) {
   .grid {
     width: 100%;

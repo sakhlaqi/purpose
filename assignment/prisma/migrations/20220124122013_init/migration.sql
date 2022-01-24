@@ -1,0 +1,5 @@
+-- CreateTable
+CREATE TABLE "Funds" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "data" TEXT NOT NULL DEFAULT ''
+);
