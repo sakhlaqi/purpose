@@ -121,7 +121,7 @@ class FundsClass{
         formData = _.merge(formData,{[symbol]:{"series":{[series]:{"latest_nav":{"value":value}}}}})
         break;
       case "latest_nav.date":
-        let data : any = funds.data
+        let data:any = funds.data
         for (let key in data) {
           if (data.hasOwnProperty(key)) {
             for (let k in data[key].series) {
@@ -162,31 +162,31 @@ const funds = new FundsClass();
 export default function Index({ DB_DATA } : any) {
   const [data] = useState(DB_DATA);
   return (
-  <div className={styles.container}>
-    <Head>
-      <title>Interview Assignment</title>
-      <meta name="description" content="Purpose Investment interview assignmnet" />
-      <link rel="icon" href="/favicon.ico" />
-    </Head>
+    <div className={styles.container}>
+      <Head>
+        <title>Interview Assignment</title>
+        <meta name="description" content="Purpose Investment interview assignmnet" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
 
-    <main className={styles.main}>
-      {funds.init(data)}
-    </main>
+      <main className={styles.main}>
+        {funds.init(data)}
+      </main>
 
-    <footer className={styles.footer}>
-      <a
-        href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Powered by{' '}
-        <span className={styles.logo}>
-          <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-        </span>
-      </a>
-    </footer>
-  </div>
-)
+      <footer className={styles.footer}>
+        <a
+          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Powered by{' '}
+          <span className={styles.logo}>
+            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
+          </span>
+        </a>
+      </footer>
+    </div>
+  )
 }
 
 export async function getServerSideProps() {
