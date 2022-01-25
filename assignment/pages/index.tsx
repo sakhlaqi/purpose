@@ -3,7 +3,7 @@ import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import useSWR from 'swr'
-import { PrismaClient, Funds } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import _ from 'lodash';
 
 let formData = {}
@@ -160,7 +160,7 @@ class FundsClass{
 const funds = new FundsClass();
 
 export default function Index({ DB_DATA } : any) {
-  const [data] = useState<Funds[]>(DB_DATA);
+  const [data] = useState(DB_DATA);
   return (
   <div className={styles.container}>
     <Head>
