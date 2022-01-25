@@ -31,6 +31,7 @@ class FundsClass{
     })
   }
   protected getRemoteData (callback:(n:any)=>any) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const { data, error } = useSWR(DATA_FEED_URL, fetcher)
     if (error) return <div>failed to load</div>
     if (!data) return <div>loading...</div>
@@ -47,7 +48,6 @@ class FundsClass{
             if (data[key].series.hasOwnProperty(k)) {
               let _date = new Date(data[key].series[k].latest_nav.date).toUTCString()
               if ( DEFAULT_DATE > _date ){
-                // console.log(key, JSON.stringify(data[key]))
                 delete data[key];
                 break;
               }
