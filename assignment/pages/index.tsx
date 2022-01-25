@@ -121,7 +121,7 @@ class FundsClass{
         formData = _.merge(formData,{[symbol]:{"series":{[series]:{"latest_nav":{"value":value}}}}})
         break;
       case "latest_nav.date":
-        let data = funds.data
+        let data : any = funds.data
         for (let key in data) {
           if (data.hasOwnProperty(key)) {
             for (let k in data[key].series) {
@@ -159,7 +159,7 @@ class FundsClass{
 
 const funds = new FundsClass();
 
-export default function Index({ DB_DATA }) {
+export default function Index({ DB_DATA } : any) {
   const [data] = useState<Funds[]>(DB_DATA);
   return (
   <div className={styles.container}>
