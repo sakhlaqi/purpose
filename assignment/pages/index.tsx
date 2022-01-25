@@ -1,27 +1,33 @@
-// import type { NextPage } from 'next'
-// import React, { Component } from 'react';
 import { useState } from 'react';
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import useSWR from 'swr'
 import { PrismaClient, Funds, Prisma } from '@prisma/client';
-import { diff, addedDiff, deletedDiff, updatedDiff, detailedDiff } from 'deep-object-diff';
+import _ from 'lodash';
 
+let formData = {}
+let dbData = {}
 const DEFAULT_DATE = new Date('2020-11-26').toUTCString()
 const DATA_FEED_URL = "https://purposecloud.s3.amazonaws.com/challenge-data.json"
 const fetcher = (url: RequestInfo) => fetch(url).then(r => r.json())
 const prisma = new PrismaClient()
 class FundsClass{
   data = {}
-
   constructor(){}
 
-  init(_data:any) {
+  init(_db_data:any) {
+    console.log('init data',_db_data)
     let self = this;
-    console.log('init data',_data)
+    dbData = _db_data;
     return this.getRemoteData(function(data : any){
-      return self.renderContent(self.filter(data))
+      if ( data && typeof data === 'object' && !_.isEmpty(data) ){
+        if ( _db_data && typeof _db_data === 'object' && !_.isEmpty(_db_data) ){
+            //override remote data with previously saved database data.
+            data = _.merge(data,_db_data)
+        }
+        return self.renderContent(self.filter(data))
+      }
     })
   }
   protected getRemoteData (callback:(n:any)=>any) {
@@ -35,7 +41,6 @@ class FundsClass{
   protected filter (data : any) {
     console.log('filter:', data)
     if ( data ){
-      // let _filtered_data = {}
       for (let key in data) {
         if (data.hasOwnProperty(key)) {
           for (let k in data[key].series) {
@@ -50,7 +55,6 @@ class FundsClass{
           }
         }
       }
-      // return _filtered_data;
     }
     return data
   }
@@ -63,12 +67,12 @@ class FundsClass{
   protected renderList( data : any){
     let self = this;
     return(
-      <form onSubmit={ async(e) => {self.saveFunds(data,e) }}>
+      <form onSubmit={ async(e) => {self.saveFunds(e) }}>
         <ul className={styles.fundsList}>
           <li className={styles.warning}>
             <div className={styles.row}>
-              <label htmlFor='new_date' className={styles.flexItem}>The funds listed below are probably out of date and has stale data, please check and update the info below and set the latest date accordingly:</label>
-              <input onChange={this.onChange} id="new_date" name='new_date' type="date" defaultValue={new Date().toISOString().split('T')[0]}/>
+              <label htmlFor='latest_nav.date' className={styles.flexItem}>The funds listed below are probably out of date and has stale data, please check and update the info below and set the latest date accordingly:</label>
+              <input onChange={this.onChange} id="latest_nav.date" name='latest_nav.date' type="date" defaultValue={new Date().toISOString().split('T')[0]}/>
               <button type='submit'>Save</button>
             </div>
           </li>
@@ -108,57 +112,48 @@ class FundsClass{
     )
   }
   protected onChange (event:any){
-    let self = this;
-    // let formData = self.formData || {};
     const name = event.target.name;
     const value = event.target.value;
     const symbol = event.target.dataset.symbol;
     const series = event.target.dataset.series;
-
-    // if (symbol) DATA_FORM[symbol] = DATA_FORM[symbol] || {}
-    // if (series) DATA_FORM[symbol].series = DATA_FORM[symbol].series || {}
-
     switch(name){
       case "latest_nav.value" :
-
-        // {symbol:{"series":{series:{"latest_nav":{"value":value}}}}}
-        DATA_FORM = Object.assign({},DATA_FORM,
-          {symbol:{"series":{series:{"latest_nav":{"value":value}}}}}
-        )
-        // DATA_FORM[symbol].series[series] = Object.assign( DATA_FORM[symbol].series[series], {latest_nav:{value:value}} )
-        // DATA_FORM[symbol].series[series].latest_nav.value = value;
+        formData = _.merge(formData,{[symbol]:{"series":{[series]:{"latest_nav":{"value":value}}}}})
         break;
-      case "new_date":
-        
+      case "latest_nav.date":
+        let data = funds.data
+        for (let key in data) {
+          if (data.hasOwnProperty(key)) {
+            for (let k in data[key].series) {
+              if (data[key].series.hasOwnProperty(k)) {
+                formData = _.merge(formData,{[key]:{"series":{[k]:{"latest_nav":{"date":value}}}}})
+              }
+            }
+          }
+        }
         break;
       default:
-        DATA_FORM[symbol][name] = value;
+        formData = _.merge(formData,{[symbol]:{[name]:value}})
         break;
-    }
-
-    console.log('onChange', name,value, symbol, series, DATA_FORM);
+    }    
+    console.log('form data:', formData);
   }
-  protected async saveFunds (data:any,event:any){
-    console.log('save form', data, event)
+  protected async saveFunds (event:any){
+    console.log('save form', formData)
     event.preventDefault();
 
-    if (data) {
-      // _.omit(o1, function(v,k) { return o2[k] === v; })
-      // console.log('data',data,this.REMOTE_DATA)
-      // console.log('diff', diff(data, this.REMOTE_DATA))
+    if (formData && !_.isEmpty(formData)) {
+      dbData = _.merge(dbData, formData);
+      const response = await fetch('/api/funds', {
+        method: 'POST',
+        body: JSON.stringify(dbData)
+      });
 
-      
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+      return await response.json();
     }
-
-    // const response = await fetch('/api/funds', {
-    //   method: 'POST',
-    //   body: JSON.stringify(data)
-    // });
-
-    // if (!response.ok) {
-    //   throw new Error(response.statusText);
-    // }
-    // return await response.json();
   }
 }
 
@@ -195,10 +190,13 @@ export default function Index({ DB_DATA }) {
 }
 
 export async function getServerSideProps() {
-  const _data: Funds[] = await prisma.funds.findMany(); 
+  let _db_data: any = await prisma.funds.findFirst();
+  if ( _db_data && typeof _db_data === 'object' && !_.isEmpty(_db_data) ){
+    _db_data = JSON.parse(_db_data.data);
+  }
   return {
     props : {
-      DB_DATA : _data
+      DB_DATA : _db_data
     }
   };
 }

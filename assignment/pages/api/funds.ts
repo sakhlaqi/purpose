@@ -8,20 +8,17 @@ type Data = {
   name: string
 }
 
-// export default function handler(
-//   req: NextApiRequest,
-//   res: NextApiResponse<Data>
-// ) {
-//   res.status(200).json({ name: 'John Doe' })
-// }
-
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
   try {
-    const data = JSON.parse(req.body);
-    const savedData = await prisma.funds.create({ data: data });
+    let formData = req.body;
+    if ( typeof req.body === 'object' || Array.isArray(req.body) ) {
+      formData = JSON.stringify(req.body)
+    }
+    await prisma.funds.deleteMany({});
+    const savedData = await prisma.funds.create({ data: {data: formData} });
     res.status(200).json(savedData);
   } catch (err) {
     res.status(400).json({ message: 'Something went wrong' });
