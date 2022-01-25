@@ -4,10 +4,6 @@ import { PrismaClient, Prisma } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-type Data = {
-  name: string
-}
-
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method not allowed' });
