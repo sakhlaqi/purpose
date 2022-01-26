@@ -5,10 +5,11 @@ import styles from '../styles/Home.module.css'
 import useSWR from 'swr'
 import { PrismaClient } from '@prisma/client';
 import _ from 'lodash';
+import moment from 'moment';
 
 let formData = {}
 let dbData = {}
-const DEFAULT_DATE = new Date('2020-11-26').toUTCString()
+const DEFAULT_DATE = moment.utc('2020/11/26', 'YYYY/MM/DD')
 const DATA_FEED_URL = "https://purposecloud.s3.amazonaws.com/challenge-data.json"
 const fetcher = (url: RequestInfo) => fetch(url).then(r => r.json())
 const prisma = new PrismaClient()
@@ -17,7 +18,7 @@ class FundsClass{
   constructor(){}
 
   init(_db_data:any) {
-    console.log('init data',_db_data)
+    console.log('init',_db_data)
     let self = this;
     dbData = _db_data;
     return this.getRemoteData(function(data : any){
@@ -42,12 +43,16 @@ class FundsClass{
   protected filter (data : any) {
     console.log('filter:', data)
     if ( data ){
+      // filtering funds based on the latest nav date.
+      // subtract 3 days if the default day is a Monday to get to the last friday, 
+      // otherwise subtract 1 day to get to yesterday's date
+      let _compare_date = DEFAULT_DATE.subtract( ( (DEFAULT_DATE.format('dddd') == 'Monday') ? 3 : 1 ), "days" )
       for (let key in data) {
         if (data.hasOwnProperty(key)) {
           for (let k in data[key].series) {
             if (data[key].series.hasOwnProperty(k)) {
-              let _date = new Date(data[key].series[k].latest_nav.date).toUTCString()
-              if ( DEFAULT_DATE > _date ){
+              let _date = moment.utc(data[key].series[k].latest_nav.date, 'YYYY/MM/DD')
+              if (_date.isAfter(_compare_date) ){
                 delete data[key];
                 break;
               }
