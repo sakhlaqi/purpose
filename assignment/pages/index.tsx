@@ -9,8 +9,10 @@ import moment from 'moment';
 
 let formData = {}
 let dbData = {}
+
 const DEFAULT_DATE = moment.utc('2020/11/26', 'YYYY/MM/DD')
 const DATA_FEED_URL = "https://purposecloud.s3.amazonaws.com/challenge-data.json"
+
 const fetcher = (url: RequestInfo) => fetch(url).then(r => r.json())
 const prisma = new PrismaClient()
 class FundsClass{
@@ -21,12 +23,16 @@ class FundsClass{
     console.log('init',_db_data)
     let self = this;
     dbData = _db_data;
+    //Getting the json formatted remote data
     return this.getRemoteData(function(data : any){
+      //checking if we have any remote data.
       if ( data && typeof data === 'object' && !_.isEmpty(data) ){
+        //checking if we have previously modified and saved funds deta.
         if ( _db_data && typeof _db_data === 'object' && !_.isEmpty(_db_data) ){
             //override remote data with previously saved database data.
             data = _.merge(data,_db_data)
         }
+        //filtering the data and rendring the html list
         return self.renderContent(self.filter(data))
       }
     })
@@ -116,6 +122,7 @@ class FundsClass{
       ))
     )
   }
+  //collecting form data on change
   protected onChange (event:any){
     const name = event.target.name;
     const value = event.target.value;
@@ -143,8 +150,9 @@ class FundsClass{
     }    
     console.log('form data:', formData);
   }
+  //sending data to the sqlite db on form submit
   protected async saveFunds (event:any){
-    console.log('save form', formData)
+    console.log('save', formData)
     event.preventDefault();
 
     if (formData && !_.isEmpty(formData)) {
@@ -162,8 +170,10 @@ class FundsClass{
   }
 }
 
+//initializing the Funds Class
 const funds = new FundsClass();
 
+//exporting the default homepage view.
 export default function Index({ DB_DATA } : any) {
   const [data] = useState(DB_DATA);
   return (
@@ -194,6 +204,7 @@ export default function Index({ DB_DATA } : any) {
 )
 }
 
+//Getting saved data from the database before the page loads.
 export async function getServerSideProps() {
   let _db_data: any = await prisma.funds.findFirst();
   if ( _db_data && typeof _db_data === 'object' && !_.isEmpty(_db_data) ){
